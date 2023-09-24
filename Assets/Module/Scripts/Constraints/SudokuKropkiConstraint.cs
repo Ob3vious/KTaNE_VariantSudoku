@@ -15,13 +15,13 @@ public class SudokuKropkiConstraintFactory : SudokuConstraintFactory
 
         for (int i = 0; i < grid.Length; i++)
         {
-            if (i % 6 >= 5 || i / 6 >= 5)
-                continue;
-
             //one horizontal and one vertical step respectively
             int[] shifts = new int[] { 1, 6 };
             for (int j = 0; j < 2; j++)
             {
+                if (i % 6 + shifts[j] % 6 >= 6 || i / 6 + shifts[j] / 6 >= 6)
+                    continue;
+
                 bool mayBlack = SudokuKropkiConstraint.HasBlackKropkiRelation(grid[i] + 1, grid[i + shifts[j]] + 1);
                 bool mayWhite = SudokuKropkiConstraint.HasWhiteKropkiRelation(grid[i] + 1, grid[i + shifts[j]] + 1);
 
@@ -103,6 +103,7 @@ public class SudokuKropkiConstraint : SudokuConstraint
 
         return didReduce;
     }
+
     public override string ToString()
     {
         string coordinate;

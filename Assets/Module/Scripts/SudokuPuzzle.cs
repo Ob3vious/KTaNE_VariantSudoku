@@ -98,7 +98,8 @@ public class SudokuPuzzle
 
         _extraConstraints.AddRange(new SudokuValueConstraintFactory().GetConstraints(grid));
 
-        _extraConstraints.AddRange(new SudokuQuadruplesConstraintFactory().GetConstraints(grid).ToList());
+        _extraConstraints.AddRange(new SudokuThermoConstraintFactory(_random).GetConstraints(grid).ToList());
+        //_extraConstraints.AddRange(new SudokuQuadruplesConstraintFactory().GetConstraints(grid).ToList());
         //_extraConstraints.AddRange(new SudokuKropkiConstraintFactory(_random).GetConstraints(grid).ToList());
         //_extraConstraints.AddRange(new SudokuParityConstraintFactory().GetConstraints(grid).ToList());
 
