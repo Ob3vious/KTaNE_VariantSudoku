@@ -60,7 +60,7 @@ public class SudokuQuadruplesConstraint : SudokuConstraint
 
             foreach (int value in distinctValues)
             {
-                if (quadruplet.Count(x => x.Options[value]) < 1)
+                if (quadruplet.Count(x => x.Options[value]) < _values.Count(x => x == value))
                 {
                     for (int i = 0; i < 4; i++)
                         for (int j = 0; j < 6; j++)
