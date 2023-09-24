@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ public class SudokuQuadruplesConstraintFactory : SudokuConstraintFactory
             //one horizontal and one vertical step respectively
             int[] shifts = new int[] { 0, 1, 6, 7 };
 
-            constraints.Add(new SudokuQuadruplesConstraint(i, shifts.Select(x => grid[i + x]).Distinct().OrderBy(x => x).ToArray()));
+            constraints.Add(new SudokuQuadruplesConstraint(i, shifts.Select(x => grid[i + x]).OrderBy(x => x).ToArray()));
         }
 
         return constraints;
@@ -38,7 +39,7 @@ public class SudokuQuadruplesConstraint : SudokuConstraint
     {
         if (_values.Length == 1)
             return new List<IEnumerable<SudokuConstraint>> { new List<SudokuConstraint>() };
-        return _values.Select(x => (IEnumerable<SudokuConstraint>)new SudokuConstraint[] { new SudokuQuadruplesConstraint(_index, _values.Except(new int[] { x }).ToArray()) });
+        return _values.Distinct().Select(x => Array.IndexOf(_values, x)).Select(x => (IEnumerable<SudokuConstraint>)new SudokuConstraint[] { new SudokuQuadruplesConstraint(_index, _values.Take(x).Concat(_values.Skip(x + 1)).ToArray()) });
     }
 
     public bool Reduce(SudokuCellOption[] grid)
@@ -51,42 +52,45 @@ public class SudokuQuadruplesConstraint : SudokuConstraint
 
         bool tempDidReduce;
 
+        IEnumerable<int> distinctValues = _values.Distinct();
+
         do
         {
             tempDidReduce = false;
 
-            for (int i = 0; i < _values.Length; i++)
+            foreach (int value in distinctValues)
             {
-                int value = _values[i];
-
                 if (quadruplet.Count(x => x.Options[value]) < 1)
                 {
-                    for (int j = 0; j < 4; j++)
-                        for (int k = 0; k < 6; k++)
+                    for (int i = 0; i < 4; i++)
+                        for (int j = 0; j < 6; j++)
                         {
-                            didReduce |= quadruplet[j].Options[k];
-                            quadruplet[j].Eliminate(k);
+                            didReduce |= quadruplet[i].Options[j];
+                            quadruplet[i].Eliminate(j);
                         }
                     return didReduce;
                 }
 
 
-                if (quadruplet.Count(x => x.Options[value]) != 1)
+                if (quadruplet.Count(x => x.Options[value]) != _values.Count(x => x == value))
                     continue;
 
-                int index = Enumerable.Range(0, 4).IndexOf(x => quadruplet[x].Options[value]);
+                IEnumerable<int> indices = Enumerable.Range(0, 4).Where(x => quadruplet[x].Options[value]);
 
-                if (quadruplet[index].Entropy() == 1 && quadruplet[index].Options[value])
-                    continue;
-
-                tempDidReduce |= true;
-                didReduce |= true;
-                for (int j = 0; j < 6; j++)
+                foreach (int index in indices)
                 {
-                    if (j == value)
+                    if (quadruplet[index].Entropy() == 1 && quadruplet[index].Options[value])
                         continue;
 
-                    quadruplet[index].Eliminate(j);
+                    tempDidReduce |= true;
+                    didReduce |= true;
+                    for (int i = 0; i < 6; i++)
+                    {
+                        if (i == value)
+                            continue;
+
+                        quadruplet[index].Eliminate(i);
+                    }
                 }
             }
         } while (tempDidReduce);

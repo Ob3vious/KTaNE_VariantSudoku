@@ -41,4 +41,15 @@ public class VariantSudokuScript : MonoBehaviour
 
         Debug.Log(_puzzle.IsUnique());
     }
+
+    //Don't hold up the next modules if the module is gone before finishing generation
+    void OnDestroy()
+    {
+        if (_thread == null)
+            return;
+
+        _thread.Interrupt();
+        _thread = null;
+        _isUsingThreads = false;
+    }
 }
