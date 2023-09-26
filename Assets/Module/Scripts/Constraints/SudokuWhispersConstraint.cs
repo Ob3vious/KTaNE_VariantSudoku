@@ -198,6 +198,12 @@ public class SudokuWhispersConstraint : SudokuConstraint
 
     public SudokuWhispersConstraint Merge(SudokuWhispersConstraint other)
     {
+        //no loops please
+        if (_indices.First() == other._indices.First() && _indices.Last() == other._indices.Last())
+            return null;
+        if (_indices.First() == other._indices.Last() && _indices.Last() == other._indices.First())
+            return null;
+
         if (_indices.First() == other._indices.Last())
         {
             //Debug.Log(_indices.Join("-") + " + " + other._indices.Join("-") + "=>" + other._indices.Concat(_indices.Skip(1)).Join("-"));
